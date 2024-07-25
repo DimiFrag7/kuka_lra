@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: kuka_description
+    relative_path: urdf/dim_kuka.xacro
+    xacro_args: ""
+  SRDF:
+    relative_path: config/kuka_kr4r600.srdf
+  CONFIG:
+    author_name: jimdff
+    author_email: jimdff@gmail.com
+    generated_timestamp: 1719060772

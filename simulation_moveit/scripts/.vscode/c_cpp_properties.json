@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/jimdff/exparm_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/jimdff/exparm_ws/src/conveyor_demo/src/gazebo-conveyor/include/**",
+        "/home/jimdff/exparm_ws/src/kuka_expe_noetic/kuka_cybertech_kr16_r1610_moveit_plugins/include/**",
+        "/home/jimdff/exparm_ws/src/kuka_expe_noetic/kuka_eki_hw_interface/include/**",
+        "/home/jimdff/exparm_ws/src/kuka_expe_noetic/kuka_rsi_hw_interface/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

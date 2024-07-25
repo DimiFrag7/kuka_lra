@@ -1,0 +1,33 @@
+<launch>
+	<arg name="arg_x" default="0.00" />
+	<arg name="arg_y" default="0.00" />
+	<arg name="arg_z" default="0.00" />
+	<arg name="arg_R" default="0.00" />
+	<arg name="arg_P" default="0.00" />
+	<arg name="arg_Y" default="0.00" />
+
+	<!--Urdf file path-->
+  	<param name="robot_description" command="xacro  '$(find kuka_description)/urdf/dim_kuka.xacro'" />
+
+	<!--spawn a empty gazebo world-->
+	<include file="$(find gazebo_ros)/launch/empty_world.launch" />
+	<node name="tf_footprint_base" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 base_link base_footprint 40" />
+	
+	<!--spawn model-->
+	<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-x 0.7 -y 0.0 -z 0.0 -Y $(arg arg_Y) -param robot_description -urdf -model robot_arm_urdf -J joint_1 0.0 -J joint_2 0.0 -J joint_3 0.0 -J joint_4 0.0 -J joint_5 0.0 -J joint_6 0.0" />
+	
+	<!-- Spawn conveyor object -->
+	<group ns="conveyor">
+	<node name="spawn_model_belt" pkg="gazebo_ros" type="spawn_model" args="-x 1.0 -y 0.0 -z 0.0 -Y 0.0 -file $(find demo_world)/urdf/conveyor.urdf -urdf -model conveyor_belt" respawn="false" output="screen" />
+	</group>
+	<node name="cube_spawner" pkg="demo_world" type="demo.py" output="screen"/>
+
+	<!--Load and launch the joint trajectory controller-->
+	<rosparam file ="$(find simulation_moveit)/config/joint_trajectory_controller.yaml" command="load"/>
+	<node name= "controller_spawner" pkg= "controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller robot_arm_controller"/>
+	<!-- Robot State Publisher for TF of each joint: publishes all the current states of the joint, then RViz can visualize -->
+	
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen"/>
+	
+
+</launch>
