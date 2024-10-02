@@ -61,9 +61,40 @@
     </actuator>
   </transmission>
   <!-- end of transmission list -->
+  
+     <gazebo>
+	<plugin name="control" filename="libgazebo_ros_control.so">
+	<robotNamespace>/</robotNamespace>
+	</plugin>
+    </gazebo>
+    
+    <gazebo reference="link_1">
+	<selfCollide>true</selfCollide>
+    </gazebo>
+    
+    <gazebo reference="link_2">
+	<selfCollide>true</selfCollide>
+    </gazebo>
+    
+    <gazebo reference="link_3">
+	<selfCollide>true</selfCollide>
+    </gazebo>
+    
+    <gazebo reference="link_4">
+	<selfCollide>true</selfCollide>
+    </gazebo>
+    
+    <gazebo reference="link_5">
+	<selfCollide>true</selfCollide>
+    </gazebo>
+    
+    <gazebo reference="link_6">
+	<selfCollide>true</selfCollide>
+    </gazebo>
+    
 
   <!-- Gazebo-specific link properties -->
-  <gazebo reference="${prefix}base_link">
+  <!--gazebo reference="${prefix}base_link">
     <material>Gazebo/White</material>
     <turnGravityOff>true</turnGravityOff>
   </gazebo>
@@ -90,7 +121,7 @@
   <gazebo reference="${prefix}link_6">
     <material>Gazebo/Black</material>
     <turnGravityOff>true</turnGravityOff>
-  </gazebo>
+  </gazebo-->
 
   <!-- ros_control plugin -->
   <gazebo>

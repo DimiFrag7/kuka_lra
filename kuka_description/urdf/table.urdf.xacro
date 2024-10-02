@@ -26,7 +26,8 @@
   <xacro:property name="table_top_thickness" value="0.05"/>
 
   <xacro:property name="M_PI" value="3.1415926535897931" />
-
+  
+  <xacro:include filename="$(find kuka_description)/urdf/container.xacro"/>  
 
   <!-- tabletop height is .55+.01+.025=.585 -->
   <link name="table_top_link">

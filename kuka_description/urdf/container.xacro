@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+
+  <joint name="container_red_joint" type="fixed">
+    <parent link="table_top_link"/>
+    <child link="container_red_link"/>
+    <origin xyz="0.1 -0.4 0.84" rpy="0 0 0"/>    
+  </joint>
+  
+  
+  <link name="container_red_link">
+    <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://simulation_moveit/meshes/visual/container.stl" />
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://simulation_moveit/meshes/collision/container.stl" />
+        </geometry>
+      </collision>
+  </link>
+  
+  <gazebo reference="container_red_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+ 
+  
+  <joint name="container_green_joint" type="fixed">
+    <parent link="table_top_link"/>
+    <child link="container_green_link"/>
+    <origin xyz="0.1 -0.2 0.84" rpy="0 0 0"/>    
+  </joint>
+  
+  
+  <link name="container_green_link">
+    <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://simulation_moveit/meshes/visual/container.stl" />
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://simulation_moveit/meshes/collision/container.stl" />
+        </geometry>
+      </collision>
+  </link>
+  
+  <gazebo reference="container_green_link">
+    <material>Gazebo/Green</material>
+  </gazebo>
+  
+  <joint name="container_blue_joint" type="fixed">
+    <parent link="table_top_link"/>
+    <child link="container_blue_link"/>
+    <origin xyz="0.1 0.3 0.84" rpy="0 0 0"/>    
+  </joint>
+  
+  
+  <link name="container_blue_link">
+    <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://simulation_moveit/meshes/visual/container.stl" />
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://simulation_moveit/meshes/collision/container.stl" />
+        </geometry>
+      </collision>
+  </link>
+  
+  <gazebo reference="container_blue_link">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+ 
+</robot>  
