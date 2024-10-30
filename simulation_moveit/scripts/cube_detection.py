@@ -7,14 +7,20 @@ import cv2
 import numpy as np
 from std_msgs.msg import String
 from geometry_msgs.msg import Pose
-import threading
+import rospkg
 
 class ColorDetector:
     def __init__(self):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/image_raw", Image, self.camera_callback)
         self.pose_sub = rospy.Subscriber("/arm_pose", Pose, self.pose_callback)
-        self.cascade = cv2.CascadeClassifier('/home/jimdff/exparm_ws/src/kuka_expe_noetic/simulation_moveit/img/finalcascade.xml')
+
+        # Get the correct path to the cascade file
+        rospack = rospkg.RosPack()
+        package_path = rospack.get_path('simulation_moveit')
+        cascade_path = package_path + '/img/finalcascade.xml'
+        
+        self.cascade = cv2.CascadeClassifier(cascade_path)
         self.objectName = 'Cube'
         self.pub = rospy.Publisher("color_cube_topic", String, queue_size=10)
         self.color_detected = False

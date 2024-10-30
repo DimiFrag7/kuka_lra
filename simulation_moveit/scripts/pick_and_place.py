@@ -8,30 +8,23 @@ from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
 import math
 from std_srvs.srv import Empty
-from gazebo_msgs.msg import ModelStates
 
 class ArmController:
     def __init__(self):
         rospy.init_node('move_arm_position_node', anonymous=True)
         
-        # Move group for controlling the arm
         self.move_group = MoveGroupCommander("arm_manipulator")
 
-        # Publisher for arm pose
         self.arm_pose_pub = rospy.Publisher('/arm_pose', Pose, queue_size=10)
 
-        # Start a timer to publish arm pose continuously at 10 Hz
-        self.publish_rate = rospy.Rate(5)  # 10 Hz publishing rate
-        rospy.Timer(rospy.Duration(0.1), self.continuous_publish_arm_pose)  # Calls every 0.1 seconds
+        self.publish_rate = rospy.Rate(5)  
+        rospy.Timer(rospy.Duration(0.1), self.continuous_publish_arm_pose)  
 
-        # Initial movement to "detect" pose
         self.move_arm_to_pose("detect", 1, 1)
         
-        # Subscribe to color detection topic
         rospy.Subscriber("color_cube_topic", String, self.color_callback)
         
-        # Conveyor service
-        rospy.wait_for_service('conveyor/control')
+        rospy.wait_for_service('conveyor/control') 
         self.conveyor_control = rospy.ServiceProxy('conveyor/control', ConveyorBeltControl)
         self.control_conveyor_power(15)
 
@@ -93,6 +86,38 @@ class ArmController:
                     rospy.sleep(duration)
         except rospy.ServiceException as e:
             rospy.logerr("Service call failed: %s", e)
+    
+    def toggle_grasp_services(self, first_sleep, action, second_sleep):
+        rospy.sleep(first_sleep)
+
+        services = [
+            f'/kuka_grasp/{action}',
+            f'/kuka_grasp1/{action}',
+            f'/kuka_grasp2/{action}',
+            f'/kuka_grasp3/{action}',
+            f'/kuka_grasp4/{action}',
+            f'/kuka_grasp5/{action}',
+            f'/kuka_grasp6/{action}',
+            f'/kuka_grasp7/{action}',
+            f'/kuka_grasp8/{action}'
+        ]
+
+        for service in services:
+            self.call_service(service)
+
+   
+        rospy.sleep(second_sleep)  
+
+    def move_to_pose(self, pose, velocity_scaling, acceleration_scaling):
+        self.move_group.set_pose_target(pose)
+        self.move_group.set_planning_time(20)  
+        self.move_group.set_max_velocity_scaling_factor(velocity_scaling)
+        self.move_group.set_max_acceleration_scaling_factor(acceleration_scaling)
+        self.move_group.go(wait=True)
+        self.move_group.stop()
+        self.move_group.clear_pose_targets()
+       
+              
 
     def red_movement(self):
         # Move the arm to the first target position
@@ -118,32 +143,9 @@ class ArmController:
         first_pose.orientation.z = quaternion[2]
         first_pose.orientation.w = quaternion[3]
 
-        self.move_group.set_pose_target(first_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.set_max_velocity_scaling_factor(1)
-        self.move_group.set_max_acceleration_scaling_factor(1)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(first_pose, 1, 1)
 
-        rospy.sleep(0.01)
-
-        on_services = [
-            '/kuka_grasp/on',
-            '/kuka_grasp1/on',
-            '/kuka_grasp2/on',
-            '/kuka_grasp3/on',
-            '/kuka_grasp4/on',
-            '/kuka_grasp5/on',
-            '/kuka_grasp6/on',
-            '/kuka_grasp7/on',
-            '/kuka_grasp8/on'
-        ]
-
-        for service in on_services:
-            self.call_service(service)
-
-        rospy.sleep(2)
+        self.toggle_grasp_services(0.01, 'on', 1)
 
         # Move the arm to the second target position
         second_pose = Pose()
@@ -152,13 +154,7 @@ class ArmController:
         second_pose.position.z = 0.8 + 0.3
         second_pose.orientation = first_pose.orientation
 
-        self.move_group.set_pose_target(second_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.set_max_velocity_scaling_factor(0.1)
-        self.move_group.set_max_acceleration_scaling_factor(0.1)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(second_pose, 0.1, 0.1)
 
         # Rotate the arm to 130 degrees
         joint_values = self.move_group.get_current_joint_values()
@@ -170,6 +166,7 @@ class ArmController:
         self.move_group.go(wait=True)
         self.move_group.stop()
         self.move_group.clear_pose_targets()
+
 
         # Move the arm to the red target position
         red_pose = Pose()
@@ -194,38 +191,13 @@ class ArmController:
         red_pose.orientation.z = quaternion[2]
         red_pose.orientation.w = quaternion[3]
 
-        self.move_group.set_pose_target(red_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.set_max_velocity_scaling_factor(0.03)
-        self.move_group.set_max_acceleration_scaling_factor(0.03)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(red_pose, 0.03, 0.03)
 
         redplace_pose = self.move_group.get_current_pose().pose
         redplace_pose.position.z -= 0.15
-        self.move_group.set_pose_target(redplace_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(redplace_pose, 0.03, 0.03)
 
-        rospy.sleep(2)
-
-        off_services = [
-            '/kuka_grasp/off',
-            '/kuka_grasp1/off',
-            '/kuka_grasp2/off',
-            '/kuka_grasp3/off',
-            '/kuka_grasp4/off',
-            '/kuka_grasp5/off',
-            '/kuka_grasp6/off',
-            '/kuka_grasp7/off',
-            '/kuka_grasp8/off'
-        ]
-
-        for service in off_services:
-            self.call_service(service)
+        self.toggle_grasp_services(1.5, 'off', 0.01)
 
         self.move_arm_to_pose("detect", 1, 1)
 
@@ -256,32 +228,9 @@ class ArmController:
         first_pose.orientation.z = quaternion[2]
         first_pose.orientation.w = quaternion[3]
 
-        self.move_group.set_pose_target(first_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.set_max_velocity_scaling_factor(1)
-        self.move_group.set_max_acceleration_scaling_factor(1)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(first_pose, 1, 1)
 
-        rospy.sleep(0.01)
-
-        on_services = [
-            '/kuka_grasp/on',
-            '/kuka_grasp1/on',
-            '/kuka_grasp2/on',
-            '/kuka_grasp3/on',
-            '/kuka_grasp4/on',
-            '/kuka_grasp5/on',
-            '/kuka_grasp6/on',
-            '/kuka_grasp7/on',
-            '/kuka_grasp8/on'
-        ]
-
-        for service in on_services:
-            self.call_service(service)
-
-        rospy.sleep(2)
+        self.toggle_grasp_services(0.01, 'on', 1)
 
         # Move the arm to the second target position
         second_pose = Pose()
@@ -290,13 +239,7 @@ class ArmController:
         second_pose.position.z = 0.8 + 0.3
         second_pose.orientation = first_pose.orientation
 
-        self.move_group.set_pose_target(second_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.set_max_velocity_scaling_factor(0.1)
-        self.move_group.set_max_acceleration_scaling_factor(0.1)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(second_pose, 0.1, 0.1)
 
         # Rotate the arm to 140 degrees 
         joint_values = self.move_group.get_current_joint_values()
@@ -332,38 +275,13 @@ class ArmController:
         red_pose.orientation.z = quaternion[2]
         red_pose.orientation.w = quaternion[3]
 
-        self.move_group.set_pose_target(red_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.set_max_velocity_scaling_factor(0.03)
-        self.move_group.set_max_acceleration_scaling_factor(0.03)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(red_pose, 0.03, 0.03)
 
         redplace_pose = self.move_group.get_current_pose().pose
         redplace_pose.position.z -= 0.15
-        self.move_group.set_pose_target(redplace_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(redplace_pose, 0.03, 0.03)
 
-        rospy.sleep(2)
-
-        off_services = [
-            '/kuka_grasp/off',
-            '/kuka_grasp1/off',
-            '/kuka_grasp2/off',
-            '/kuka_grasp3/off',
-            '/kuka_grasp4/off',
-            '/kuka_grasp5/off',
-            '/kuka_grasp6/off',
-            '/kuka_grasp7/off',
-            '/kuka_grasp8/off'
-        ]
-
-        for service in off_services:
-            self.call_service(service)
+        self.toggle_grasp_services(1.5, 'off', 0.01)
 
         self.move_arm_to_pose("detect", 1, 1)
 
@@ -393,32 +311,10 @@ class ArmController:
         first_pose.orientation.z = quaternion[2]
         first_pose.orientation.w = quaternion[3]
 
-        self.move_group.set_pose_target(first_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.set_max_velocity_scaling_factor(1)
-        self.move_group.set_max_acceleration_scaling_factor(1)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(first_pose, 1, 1)
 
-        rospy.sleep(0.01)
 
-        on_services = [
-            '/kuka_grasp/on',
-            '/kuka_grasp1/on',
-            '/kuka_grasp2/on',
-            '/kuka_grasp3/on',
-            '/kuka_grasp4/on',
-            '/kuka_grasp5/on',
-            '/kuka_grasp6/on',
-            '/kuka_grasp7/on',
-            '/kuka_grasp8/on'
-        ]
-
-        for service in on_services:
-            self.call_service(service)
-
-        rospy.sleep(0.01)
+        self.toggle_grasp_services(0.01, 'on', 1)
 
         # Move the arm to the second target position
         second_pose = Pose()
@@ -427,13 +323,8 @@ class ArmController:
         second_pose.position.z = 0.8 + 0.3
         second_pose.orientation = first_pose.orientation
 
-        self.move_group.set_pose_target(second_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.set_max_velocity_scaling_factor(0.1)
-        self.move_group.set_max_acceleration_scaling_factor(0.1)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(second_pose, 0.1, 0.1)
+
 
         # Rotate the arm to 120 degrees (2.094 radians)
         joint_values = self.move_group.get_current_joint_values()
@@ -445,6 +336,7 @@ class ArmController:
         self.move_group.go(wait=True)
         self.move_group.stop()
         self.move_group.clear_pose_targets()
+
 
         # Move the arm to the blue target position
         blue_pose = Pose()
@@ -469,39 +361,15 @@ class ArmController:
         blue_pose.orientation.z = quaternion[2]
         blue_pose.orientation.w = quaternion[3]
 
-        self.move_group.set_pose_target(blue_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.set_max_velocity_scaling_factor(0.03)
-        self.move_group.set_max_acceleration_scaling_factor(0.03)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(blue_pose, 0.03, 0.03)
+
 
         # Move the arm slightly down to place the object
         blueplace_pose = self.move_group.get_current_pose().pose
         blueplace_pose.position.z -= 0.15
-        self.move_group.set_pose_target(blueplace_pose)
-        self.move_group.set_planning_time(20)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
+        self.move_to_pose(blueplace_pose, 0.03, 0.03)
 
-        rospy.sleep(2)
-
-        off_services = [
-            '/kuka_grasp/off',
-            '/kuka_grasp1/off',
-            '/kuka_grasp2/off',
-            '/kuka_grasp3/off',
-            '/kuka_grasp4/off',
-            '/kuka_grasp5/off',
-            '/kuka_grasp6/off',
-            '/kuka_grasp7/off',
-            '/kuka_grasp8/off'
-        ]
-
-        for service in off_services:
-            self.call_service(service)
+        self.toggle_grasp_services(1.5, 'off', 0.01)
 
         self.move_arm_to_pose("detect", 1, 1)
 
