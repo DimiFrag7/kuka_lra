@@ -73,7 +73,6 @@ class ArmController:
         rospy.loginfo(f"Published arm pose: {pose}")
 
     def continuous_publish_arm_pose(self, event):
-        # This method gets called continuously by the rospy.Timer to publish arm pose
         current_pose = self.move_group.get_current_pose().pose
         self.publish_arm_pose(current_pose)
 
@@ -120,11 +119,11 @@ class ArmController:
               
 
     def red_movement(self):
-        # Move the arm to the first target position
-        first_pose = Pose()
-        first_pose.position.x = 0.3
-        first_pose.position.y = 0.2
-        first_pose.position.z = 0.8
+
+        red_approach_pose = Pose()
+        red_approach_pose.position.x = 0.3
+        red_approach_pose.position.y = 0.2
+        red_approach_pose.position.z = 0.8
 
         # Define orientation in degrees
         roll_deg = 0
@@ -138,23 +137,23 @@ class ArmController:
 
         # Convert RPY angles to quaternion
         quaternion = quaternion_from_euler(roll_rad, pitch_rad, yaw_rad)
-        first_pose.orientation.x = quaternion[0]
-        first_pose.orientation.y = quaternion[1]
-        first_pose.orientation.z = quaternion[2]
-        first_pose.orientation.w = quaternion[3]
+        red_approach_pose.orientation.x = quaternion[0]
+        red_approach_pose.orientation.y = quaternion[1]
+        red_approach_pose.orientation.z = quaternion[2]
+        red_approach_pose.orientation.w = quaternion[3]
 
-        self.move_to_pose(first_pose, 1, 1)
+        self.move_to_pose(red_approach_pose, 1, 1)
 
         self.toggle_grasp_services(0.01, 'on', 1)
 
         # Move the arm to the second target position
-        second_pose = Pose()
-        second_pose.position.x = 0.3
-        second_pose.position.y = 0.2
-        second_pose.position.z = 0.8 + 0.3
-        second_pose.orientation = first_pose.orientation
+        red_lift_pose = Pose()
+        red_lift_pose.position.x = 0.3
+        red_lift_pose.position.y = 0.2
+        red_lift_pose.position.z = 0.8 + 0.3
+        red_lift_pose.orientation = red_approach_pose.orientation
 
-        self.move_to_pose(second_pose, 0.1, 0.1)
+        self.move_to_pose(red_lift_pose, 0.1, 0.1)
 
         # Rotate the arm to 130 degrees
         joint_values = self.move_group.get_current_joint_values()
@@ -174,17 +173,14 @@ class ArmController:
         red_pose.position.y = -0.4
         red_pose.position.z = 0.8 + 0.3
 
-        # Define orientation in degrees
         roll_deg = 179
         pitch_deg = 90
         yaw_deg = 0
 
-        # Convert degrees to radians
         roll_rad = math.radians(roll_deg)
         pitch_rad = math.radians(pitch_deg)
         yaw_rad = math.radians(yaw_deg)
 
-        # Convert RPY angles to quaternion
         quaternion = quaternion_from_euler(roll_rad, pitch_rad, yaw_rad)
         red_pose.orientation.x = quaternion[0]
         red_pose.orientation.y = quaternion[1]
@@ -205,41 +201,38 @@ class ArmController:
 
 
     def green_movement(self):
-        # Move the arm to the first target position
-        first_pose = Pose()
-        first_pose.position.x = 0.3
-        first_pose.position.y = 0.2
-        first_pose.position.z = 0.8
+        # Move the arm to the green_approach_pose
+        green_approach_pose = Pose()
+        green_approach_pose.position.x = 0.3
+        green_approach_pose.position.y = 0.2
+        green_approach_pose.position.z = 0.8
 
-        # Define orientation in degrees
         roll_deg = 0
         pitch_deg = 90
         yaw_deg = 0
 
-        # Convert degrees to radians
         roll_rad = math.radians(roll_deg)
         pitch_rad = math.radians(pitch_deg)
         yaw_rad = math.radians(yaw_deg)
 
-        # Convert RPY angles to quaternion
         quaternion = quaternion_from_euler(roll_rad, pitch_rad, yaw_rad)
-        first_pose.orientation.x = quaternion[0]
-        first_pose.orientation.y = quaternion[1]
-        first_pose.orientation.z = quaternion[2]
-        first_pose.orientation.w = quaternion[3]
+        green_approach_pose.orientation.x = quaternion[0]
+        green_approach_pose.orientation.y = quaternion[1]
+        green_approach_pose.orientation.z = quaternion[2]
+        green_approach_pose.orientation.w = quaternion[3]
 
-        self.move_to_pose(first_pose, 1, 1)
+        self.move_to_pose(green_approach_pose, 1, 1)
 
         self.toggle_grasp_services(0.01, 'on', 1)
 
-        # Move the arm to the second target position
-        second_pose = Pose()
-        second_pose.position.x = 0.3
-        second_pose.position.y = 0.2
-        second_pose.position.z = 0.8 + 0.3
-        second_pose.orientation = first_pose.orientation
+        # Move the arm to the green_lift_pose
+        green_lift_pose = Pose()
+        green_lift_pose.position.x = 0.3
+        green_lift_pose.position.y = 0.2
+        green_lift_pose.position.z = 0.8 + 0.3
+        green_lift_pose.orientation = green_approach_pose.orientation
 
-        self.move_to_pose(second_pose, 0.1, 0.1)
+        self.move_to_pose(green_lift_pose, 0.1, 0.1)
 
         # Rotate the arm to 140 degrees 
         joint_values = self.move_group.get_current_joint_values()
@@ -252,34 +245,31 @@ class ArmController:
         self.move_group.stop()
         self.move_group.clear_pose_targets()
 
- # Move the arm to the red target position
-        red_pose = Pose()
-        red_pose.position.x = -0.42
-        red_pose.position.y = -0.2
-        red_pose.position.z = 0.8 + 0.3
+        # Move the arm to the green_pose
+        green_pose  = Pose()
+        green_pose.position.x = -0.42
+        green_pose.position.y = -0.2
+        green_pose.position.z = 0.8 + 0.3
 
-        # Define orientation in degrees
         roll_deg = 179
         pitch_deg = 90
         yaw_deg = 0
 
-        # Convert degrees to radians
         roll_rad = math.radians(roll_deg)
         pitch_rad = math.radians(pitch_deg)
         yaw_rad = math.radians(yaw_deg)
 
-        # Convert RPY angles to quaternion
         quaternion = quaternion_from_euler(roll_rad, pitch_rad, yaw_rad)
-        red_pose.orientation.x = quaternion[0]
-        red_pose.orientation.y = quaternion[1]
-        red_pose.orientation.z = quaternion[2]
-        red_pose.orientation.w = quaternion[3]
+        green_pose.orientation.x = quaternion[0]
+        green_pose.orientation.y = quaternion[1]
+        green_pose.orientation.z = quaternion[2]
+        green_pose.orientation.w = quaternion[3]
 
-        self.move_to_pose(red_pose, 0.03, 0.03)
+        self.move_to_pose(green_pose , 0.03, 0.03)
 
-        redplace_pose = self.move_group.get_current_pose().pose
-        redplace_pose.position.z -= 0.15
-        self.move_to_pose(redplace_pose, 0.03, 0.03)
+        greenplace_pose  = self.move_group.get_current_pose().pose
+        greenplace_pose .position.z -= 0.15
+        self.move_to_pose(greenplace_pose , 0.03, 0.03)
 
         self.toggle_grasp_services(1.5, 'off', 0.01)
 
@@ -288,45 +278,42 @@ class ArmController:
         print(f"Arm moved to 'detect' position. Color: green")
 
     def blue_movement(self):
-        # Move the arm to the first target position
-        first_pose = Pose()
-        first_pose.position.x = 0.3
-        first_pose.position.y = 0.2
-        first_pose.position.z = 0.8
+        # Move the arm to the blue_approach_pose
+        blue_approach_pose = Pose()
+        blue_approach_pose.position.x = 0.3
+        blue_approach_pose.position.y = 0.2
+        blue_approach_pose.position.z = 0.8
 
-        # Define orientation in degrees
         roll_deg = 1
         pitch_deg = 90
         yaw_deg = 0
 
-        # Convert degrees to radians
         roll_rad = math.radians(roll_deg)
         pitch_rad = math.radians(pitch_deg)
         yaw_rad = math.radians(yaw_deg)
 
-        # Convert RPY angles to quaternion
         quaternion = quaternion_from_euler(roll_rad, pitch_rad, yaw_rad)
-        first_pose.orientation.x = quaternion[0]
-        first_pose.orientation.y = quaternion[1]
-        first_pose.orientation.z = quaternion[2]
-        first_pose.orientation.w = quaternion[3]
+        blue_approach_pose.orientation.x = quaternion[0]
+        blue_approach_pose.orientation.y = quaternion[1]
+        blue_approach_pose.orientation.z = quaternion[2]
+        blue_approach_pose.orientation.w = quaternion[3]
 
-        self.move_to_pose(first_pose, 1, 1)
+        self.move_to_pose(blue_approach_pose, 1, 1)
 
 
         self.toggle_grasp_services(0.01, 'on', 1)
 
-        # Move the arm to the second target position
-        second_pose = Pose()
-        second_pose.position.x = 0.3
-        second_pose.position.y = 0.2
-        second_pose.position.z = 0.8 + 0.3
-        second_pose.orientation = first_pose.orientation
+        # Move the arm to the blur_lift_pose
+        blur_lift_pose = Pose()
+        blur_lift_pose.position.x = 0.3
+        blur_lift_pose.position.y = 0.2
+        blur_lift_pose.position.z = 0.8 + 0.3
+        blur_lift_pose.orientation = blue_approach_pose.orientation
 
-        self.move_to_pose(second_pose, 0.1, 0.1)
+        self.move_to_pose(blur_lift_pose, 0.1, 0.1)
 
 
-        # Rotate the arm to 120 degrees (2.094 radians)
+        # Rotate the arm to 120 degrees 
         joint_values = self.move_group.get_current_joint_values()
         joint_values[0] = math.radians(-120)
         self.move_group.set_joint_value_target(joint_values)
@@ -338,23 +325,20 @@ class ArmController:
         self.move_group.clear_pose_targets()
 
 
-        # Move the arm to the blue target position
+        # Move the arm to the blue_pose
         blue_pose = Pose()
         blue_pose.position.x = -0.4
         blue_pose.position.y = 0.3
         blue_pose.position.z = 0.8 + 0.3
 
-        # Define orientation in degrees
         roll_deg = 179
         pitch_deg = 90
         yaw_deg = 0
 
-        # Convert degrees to radians
         roll_rad = math.radians(roll_deg)
         pitch_rad = math.radians(pitch_deg)
         yaw_rad = math.radians(yaw_deg)
 
-        # Convert RPY angles to quaternion
         quaternion = quaternion_from_euler(roll_rad, pitch_rad, yaw_rad)
         blue_pose.orientation.x = quaternion[0]
         blue_pose.orientation.y = quaternion[1]
