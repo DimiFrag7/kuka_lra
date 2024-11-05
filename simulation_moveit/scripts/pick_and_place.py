@@ -28,13 +28,6 @@ class ArmController:
         self.conveyor_control = rospy.ServiceProxy('conveyor/control', ConveyorBeltControl)
         self.control_conveyor_power(15)
 
-    def model_states_callback(self, msg):
-        try:
-            cube_index = msg.name.index("cube")
-            self.cube_y = msg.pose[cube_index].position.y
-        except ValueError:
-            rospy.logerr("Cube not found")
-
     def call_service(self, service_name):
         rospy.wait_for_service(service_name)
         try:
